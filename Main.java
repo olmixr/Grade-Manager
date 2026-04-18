@@ -7,7 +7,6 @@ public class Main {
     static Scanner scan = new Scanner(System.in);
     static ArrayList<Integer> grade = new ArrayList<Integer>();
 
-
     public static void addGrade(){
         System.out.println("Enter grade: ");
         int number = scan.nextInt();
@@ -69,7 +68,114 @@ public class Main {
         }
         if (sovpad == 0) System.out.println("Нету таких оценок!");
     }
-    
+
+    public static void bubbleSortAsc() {
+        if (!grade.isEmpty()) {
+            int currentValue = 0;
+            int nextValue = 0;
+            int temp = 0;
+            for (int i = 0; i < grade.size(); i++) {
+                for (int j = 0; j < grade.size() - 1 - i; j++) {
+                    currentValue = grade.get(j);
+                    nextValue = grade.get(j + 1);
+                    if (currentValue > nextValue) {
+                         temp = currentValue;
+                         grade.set(j,nextValue);
+                         grade.set(j+1,temp);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void selectionSort() {
+        for (int i = 0; i < grade.size(); i++) {
+            int minInt = i;
+            int temp = 0;
+            for (int j = i; j < grade.size(); j++) {
+                if (grade.get(j)<grade.get(minInt)){
+                    minInt = j;
+                }
+            }
+            temp = grade.get(i);
+            grade.set(i, grade.get(minInt));
+            grade.set(minInt,temp);
+        }
+    }
+
+    public static void choice(){
+        System.out.println("1. bubbleSort\n2. selectionSort");
+        int num = scan.nextInt();
+
+        switch (num){
+            case 1:
+                bubbleSortDesc();
+                break;
+            case 2:
+                selectionSort();
+                break;
+            default:
+                break;
+        }
+    }
+    public static void bubbleSortDesc() {
+        if (!grade.isEmpty()) {
+            int currentValue = 0;
+            int nextValue = 0;
+            int temp = 0;
+            for (int i = 0; i < grade.size(); i++) {
+                for (int j = 0; j < grade.size() - 1 - i; j++) {
+                    currentValue = grade.get(j);
+                    nextValue = grade.get(j + 1);
+                    if (currentValue < nextValue) {
+                        temp = currentValue;
+                        grade.set(j,nextValue);
+                        grade.set(j+1,temp);
+                    }
+                }
+            }
+        }
+    }
+    public static void showStatistics(){
+        int numValue = 0 ;
+        int numMax = grade.get(0);
+        int numMin = grade.get(0);
+        int averageValue = 0;
+        for (int i = 0; i < grade.size(); i++) {
+            numValue++;
+            if (grade.get(i)>numMax){
+                numMax = grade.get(i);
+            }
+            if (grade.get(i)<numMin){
+                numMin = grade.get(i);
+            }
+
+            if (grade.get(i)>=60){
+                System.out.println("Не сдал - " + grade.get(i));
+            }else System.out.println("Сдал - " + grade.get(i));
+
+            averageValue += grade.get(i);
+        }
+            averageValue = averageValue / grade.size();
+
+        System.out.println(numValue + " - Кол оценок");
+        System.out.println(numMax + " - Макс значение");
+        System.out.println(numMin + " - Мин значение");
+        System.out.println(averageValue + " - Сред значение");
+
+
+
+    }
+    public static void ClearAllGrades(){
+        if (!grade.isEmpty()){
+            System.out.println("Clear grades...");
+            grade.remove(0);
+            for (int i = 0; i < grade.size(); i++) {
+                grade.remove(i);
+            }
+            System.out.println("Grades clearing!");
+        }
+    }
     public static void printMenu() {
         System.out.println(
                 "==============================\n" +
@@ -116,19 +222,19 @@ public class Main {
                     removeGrade();
                     break;
                 case 5:
-                    searchGrade();;
+                    searchGrade();
                     break;
                 case 6:
-                    ;
+                    choice();
                     break;
                 case 7:
-                    ;
+                    bubbleSortDesc();
                     break;
                 case 8:
-                    ;
+                    showStatistics();
                     break;
                 case 9:
-                    ;
+                    ClearAllGrades();
                     break;
                 case 0:
                     exit = true;
