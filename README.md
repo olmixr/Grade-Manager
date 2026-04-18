@@ -1,4 +1,4 @@
-# Project 2: Fancy Grade Manager
+# Project: Fancy Grade Manager
 
 ## Goal
 
