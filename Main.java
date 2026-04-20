@@ -3,20 +3,36 @@ package org.example;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import java.util.Random;
 public class Main implements Serializable {
+    static Random random = new Random();
     static Scanner scan = new Scanner(System.in);
     static ArrayList<Integer> grade = new ArrayList<Integer>();
-    public static final String sava = "save.ser";
+    public static final String SAVE = "save.ser";
+    public static final String SAVESETTING = "setting.ser";
+    static boolean autosave = false;
+    static boolean infoload = false;
+    static boolean oneuse = true;
 
+    public static void randomArrays(){
+        System.out.println("Насколько заполнить массив?");
+        int value = scan.nextInt();
+        grade.clear();
+        if (grade.isEmpty()){
+            for (int i = 0; i< value;i++) {
+                int randomInt = random.nextInt(100);
+                grade.add(i, randomInt);
+            }
+        }
+    }
 
     public static void SaveGrades() {
         try {
-            FileOutputStream outputStream = new FileOutputStream(sava);
+            FileOutputStream outputStream = new FileOutputStream(SAVE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
             objectOutputStream.writeObject(grade);
-            System.out.println("Save file success! " + sava);
+            System.out.println("Save file success! " + SAVE);
             objectOutputStream.close();
 
         } catch (NotSerializableException e) {
@@ -29,9 +45,9 @@ public class Main implements Serializable {
     }
     public static void LoadGrades() throws FileNotFoundException {
 
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(sava))) {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(SAVE))) {
             grade = (ArrayList<Integer>) inputStream.readObject();
-            System.out.println("Load success! " + sava);
+            System.out.println("Load success! " + SAVE);
 
         } catch (NotSerializableException e) {
         throw new RuntimeException(e);
@@ -42,6 +58,44 @@ public class Main implements Serializable {
     } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void SaveAutoLoadSetting() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVESETTING))) {
+            oos.writeObject(infoload);
+            System.out.println("The file has been saved successfully!(autoload) -  " + SAVESETTING);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void loadAutoLoadSetting() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(SAVESETTING))) {
+            infoload = (boolean) inputStream.readObject();
+            System.out.println("Get info false or true! - " + SAVESETTING);
+        } catch (FileNotFoundException e) {
+            System.out.println("The auto-load settings file was not found; using the default value!");
+        } catch (IOException e) {
+            System.out.println("File download error!");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Unable to save! Save data invalid!");
+        }
+    }
+
+    public static boolean AutoSave(){
+        autosave = !autosave;
+        return autosave;
+    }
+
+    public static boolean AutoloadAccounts() throws FileNotFoundException {
+        infoload = !infoload;
+        SaveAutoLoadSetting();
+        if(infoload == true){
+            loadAutoLoadSetting();
+        }
+        return infoload;
     }
 
     public static void addGrade(){
@@ -64,7 +118,7 @@ public class Main implements Serializable {
             i++;
             }
         }
-        else System.out.println("No grades!");
+        else System.out.println("Null grades");
     }
     public static void updateGrade(){
         if (!grade.isEmpty()){
@@ -73,10 +127,10 @@ public class Main implements Serializable {
             System.out.println("Number value: ");
             int value = scan.nextInt();
           if (value >= 0 && value <= 100){
-                if (index >= 0 && index <= grade.size()) {
+                if (index >= 0 && index < grade.size()) {
                     grade.set(index, value);
                     System.out.println("Grade value edit!");
-                }
+                }else System.out.println("Index error!");
             }else System.out.println("Value слишком большой или маленький");
         }
     }
@@ -126,25 +180,43 @@ public class Main implements Serializable {
                 }
             }
         }
+        System.out.println("Null grades");
     }
 
     public static void selectionSort() {
-        for (int i = 0; i < grade.size(); i++) {
-            int minInt = i;
-            int temp = 0;
-            for (int j = i; j < grade.size(); j++) {
-                if (grade.get(j)<grade.get(minInt)){
-                    minInt = j;
+        if (!grade.isEmpty()) {
+            for (int i = 0; i < grade.size(); i++) {
+                int minInt = i;
+                int temp = 0;
+                for (int j = i; j < grade.size(); j++) {
+                    if (grade.get(j) < grade.get(minInt)) {
+                        minInt = j;
+                    }
                 }
+                temp = grade.get(i);
+                grade.set(i, grade.get(minInt));
+                grade.set(minInt, temp);
             }
-            temp = grade.get(i);
-            grade.set(i, grade.get(minInt));
-            grade.set(minInt,temp);
         }
+        System.out.println("Null grades");
     }
+    public static void insertionSort() {
+        if (!grade.isEmpty()) {
+            for (int i = 1; i < grade.size(); i++) {
+                int current = grade.get(i);
 
+                int j = i;
+                while (j > 0 && grade.get(j - 1) > current) {
+                    grade.set(j, grade.get(j - 1));
+                    j--;
+                }
+                grade.set(j, current);
+            }
+        }
+        System.out.println("Null grades");
+    }
     public static void choice(){
-        System.out.println("1. bubbleSort\n2. selectionSort");
+        System.out.println("1. bubbleSort\n2. selectionSort\n3. insertionSort");
         int num = scan.nextInt();
 
         switch (num){
@@ -153,6 +225,9 @@ public class Main implements Serializable {
                 break;
             case 2:
                 selectionSort();
+                break;
+            case 3:
+                insertionSort();
                 break;
             default:
                 break;
@@ -175,36 +250,38 @@ public class Main implements Serializable {
                 }
             }
         }
+        System.out.println("Null grades");
     }
     public static void showStatistics(){
-        int numValue = 0 ;
-        int numMax = grade.get(0);
-        int numMin = grade.get(0);
-        int averageValue = 0;
-        for (int i = 0; i < grade.size(); i++) {
-            numValue++;
-            if (grade.get(i)>numMax){
-                numMax = grade.get(i);
-            }
-            if (grade.get(i)<numMin){
-                numMin = grade.get(i);
-            }
+        if (!grade.isEmpty()) {
+            int numValue = 0;
+            int numMax = grade.get(0);
+            int numMin = grade.get(0);
+            int averageValue = 0;
+            for (int i = 0; i < grade.size(); i++) {
+                numValue++;
+                if (grade.get(i) > numMax) {
+                    numMax = grade.get(i);
+                }
+                if (grade.get(i) < numMin) {
+                    numMin = grade.get(i);
+                }
+                if (grade.get(i) >= 60) {
+                    System.out.println("Не сдал - " + grade.get(i));
+                } else System.out.println("Сдал - " + grade.get(i));
 
-            if (grade.get(i)>=60){
-                System.out.println("Не сдал - " + grade.get(i));
-            }else System.out.println("Сдал - " + grade.get(i));
-
-            averageValue += grade.get(i);
-        }
+                averageValue += grade.get(i);
+            }
             averageValue = averageValue / grade.size();
 
-        System.out.println(numValue + " - Кол оценок");
-        System.out.println(numMax + " - Макс значение");
-        System.out.println(numMin + " - Мин значение");
-        System.out.println(averageValue + " - Сред значение");
+            System.out.println(numValue + " - Кол оценок");
+            System.out.println(numMax + " - Макс значение");
+            System.out.println(numMin + " - Мин значение");
+            System.out.println(averageValue + " - Сред значение");
 
 
-
+        }
+        System.out.println("Null grades");
     }
     public static void ClearAllGrades(){
         if (!grade.isEmpty()){
@@ -215,6 +292,7 @@ public class Main implements Serializable {
             }
             System.out.println("Grades clearing!");
         }
+        System.out.println("Null grades");
     }
     public static void printMenu() {
         System.out.println(
@@ -232,6 +310,9 @@ public class Main implements Serializable {
                 "9. Clear all grades\n" +
                 "10. SaveGrades data\n" +
                 "11. LoadGrades data\n" +
+                "12. AUTOSaveGrades data " + autosave+
+                "\n13. AUTOLoadGrades data " + infoload+
+                "\n14. Random arrays\n" +
 
                 "\n"+
                 "0. Exit\n"+
@@ -242,6 +323,10 @@ public class Main implements Serializable {
     public static void main(String[] args) throws IOException {
         boolean exit = false;
         while (true) {
+            if (oneuse == true){
+            loadAutoLoadSetting();
+            oneuse = false;
+            }
             printMenu();
              int number = 0;
             System.out.println("Enter number: ");
@@ -286,8 +371,18 @@ public class Main implements Serializable {
                 case 11:
                     LoadGrades();
                     break;
+                case 12:
+                    AutoSave();
+                    break;
+                case 13:
+                    AutoloadAccounts();
+                    break;
+                case 14:
+                    randomArrays();
+                    break;
                 case 0:
                     exit = true;
+                    if (infoload==true)SaveAutoLoadSetting();
                     break;
                 default:
                     break;
