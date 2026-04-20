@@ -1,11 +1,48 @@
 package org.example;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Main {
+public class Main implements Serializable {
     static Scanner scan = new Scanner(System.in);
     static ArrayList<Integer> grade = new ArrayList<Integer>();
+    public static final String sava = "save.ser";
+
+
+    public static void SaveGrades() {
+        try {
+            FileOutputStream outputStream = new FileOutputStream(sava);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+            objectOutputStream.writeObject(grade);
+            System.out.println("Save file success! " + sava);
+            objectOutputStream.close();
+
+        } catch (NotSerializableException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void LoadGrades() throws FileNotFoundException {
+
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(sava))) {
+            grade = (ArrayList<Integer>) inputStream.readObject();
+            System.out.println("Load success! " + sava);
+
+        } catch (NotSerializableException e) {
+        throw new RuntimeException(e);
+    } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void addGrade(){
         System.out.println("Enter grade: ");
@@ -19,12 +56,15 @@ public class Main {
 
     public static void allGrade(){
         int i = 0;
+        if (!grade.isEmpty()){
         for (int s : grade) {
             System.out.println("На номер " + i);
             System.out.println(s);
             System.out.println("-----");
             i++;
+            }
         }
+        else System.out.println("No grades!");
     }
     public static void updateGrade(){
         if (!grade.isEmpty()){
@@ -190,12 +230,16 @@ public class Main {
                 "7. Sort grades descending\n" +
                 "8. Show statistics\n" +
                 "9. Clear all grades\n" +
+                "10. SaveGrades data\n" +
+                "11. LoadGrades data\n" +
+
+                "\n"+
                 "0. Exit\n"+
                 "==============================\n"
                 );
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         boolean exit = false;
         while (true) {
             printMenu();
@@ -235,6 +279,12 @@ public class Main {
                     break;
                 case 9:
                     ClearAllGrades();
+                    break;
+                case 10:
+                    SaveGrades();
+                    break;
+                case 11:
+                    LoadGrades();
                     break;
                 case 0:
                     exit = true;
