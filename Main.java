@@ -10,9 +10,99 @@ public class Main implements Serializable {
     static ArrayList<Integer> grade = new ArrayList<Integer>();
     public static final String SAVE = "save.ser";
     public static final String SAVESETTING = "setting.ser";
+
+    public static final String UNDO1 = "undo/undo1.ser";
+    public static final String UNDO2 = "undo/undo2.ser";
+    public static final String UNDO3 = "undo/undo3.ser";
+    public static final String UNDO4 = "undo/undo4.ser";
+    private static String undoExchenge;
+
     static boolean autosave = false;
     static boolean infoload = false;
     static boolean oneuse = true;
+
+    public static void Undo() throws FileNotFoundException {
+        System.out.println("Undo option:  ");
+
+        if (undoAdd == true) {
+            System.out.println("1. Undo the grade add");
+        }
+        if (undoUpdate == true) {
+            System.out.println("2. Undo the grade update");
+        }
+        if (undoRemove == true) {
+            System.out.println("3. Undo the grade remove");
+        }
+        if (undoClear == true) {
+            System.out.println("4. Undo clear all grade");
+        }
+        if (undoAdd || undoUpdate || undoRemove || undoClear) {
+            System.out.println("0. Exit");
+            int number = scan.nextInt();
+            switch (number) {
+                case 1:
+                    if (undoAdd == true) {
+                        undoAdd = false;
+                        undoExchenge = UNDO1;
+                        LoadGradesUndo();
+                    }
+                case 2:
+                    if (undoUpdate == true) {
+                        undoUpdate = false;
+                        undoExchenge = UNDO2;
+                        LoadGradesUndo();
+                    }
+                case 3:
+                    if (undoRemove == true) {
+                        undoRemove = false;
+                        undoExchenge = UNDO3;
+                        LoadGradesUndo();
+                    }
+                case 4:
+                    if (undoClear == true) {
+                        undoClear = false;
+                        undoExchenge = UNDO4;
+                        LoadGradesUndo();
+                    }
+                case 0:
+                    break;
+            }
+
+        }else System.out.println("Nothing");
+    }
+    public static void SaveGradesUndo() {
+        try {
+            FileOutputStream outputStream = new FileOutputStream(undoExchenge);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+            objectOutputStream.writeObject(grade);
+            System.out.println("Save file success! " + undoExchenge);
+            objectOutputStream.close();
+
+        } catch (NotSerializableException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void LoadGradesUndo() throws FileNotFoundException {
+
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(undoExchenge))) {
+            grade = (ArrayList<Integer>) inputStream.readObject();
+            System.out.println("Load success! " + undoExchenge);
+
+        } catch (NotSerializableException e) {
+            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void randomArrays(){
         System.out.println("Насколько заполнить массив?");
@@ -98,10 +188,16 @@ public class Main implements Serializable {
         return infoload;
     }
 
+    static boolean undoAdd = false;
     public static void addGrade(){
         System.out.println("Enter grade: ");
         int number = scan.nextInt();
         if(0<=number && number<=100) {
+
+            undoAdd = true;
+            undoExchenge = UNDO1;
+            SaveGradesUndo();
+
             grade.add(number);
         }else {
             System.out.println("Error Grade");
@@ -120,6 +216,8 @@ public class Main implements Serializable {
         }
         else System.out.println("Null grades");
     }
+
+    static boolean undoUpdate = false;
     public static void updateGrade(){
         if (!grade.isEmpty()){
             System.out.println("Number index:");
@@ -128,24 +226,34 @@ public class Main implements Serializable {
             int value = scan.nextInt();
           if (value >= 0 && value <= 100){
                 if (index >= 0 && index < grade.size()) {
+
+                    undoUpdate = true;
+                    undoExchenge = UNDO2;
+                    SaveGradesUndo();
+
                     grade.set(index, value);
                     System.out.println("Grade value edit!");
                 }else System.out.println("Index error!");
-            }else System.out.println("Value слишком большой или маленький");
+            }else System.out.println("The value is too large or too small");
         }
     }
-
+    static boolean undoRemove =  false;
     public static void removeGrade(){
         if (!grade.isEmpty()){
             System.out.println("Number index:");
             int index = scan.nextInt();
                 if (index >= 0 && index <= grade.size()) {
+
+                    undoRemove = true;
+                    undoExchenge = UNDO3;
+                    SaveGradesUndo();
+
                     grade.remove(index);
                     System.out.println("Grade index removed!");
             }else
-                System.out.println("индекс не правильный!");
+                System.out.println("Index not correct!");
         }
-        System.out.println("Нету оценок!");
+        System.out.println("Null grade!");
     }
 
     public static void searchGrade() {
@@ -283,11 +391,18 @@ public class Main implements Serializable {
         }
         System.out.println("Null grades");
     }
+
+    static boolean undoClear = false;
     public static void ClearAllGrades(){
         if (!grade.isEmpty()){
             System.out.println("Clear grades...");
             grade.remove(0);
             for (int i = 0; i < grade.size(); i++) {
+
+                undoClear = true;
+                undoExchenge = UNDO4;
+                SaveGradesUndo();
+
                 grade.remove(i);
             }
             System.out.println("Grades clearing!");
@@ -299,20 +414,21 @@ public class Main implements Serializable {
                 "==============================\n" +
                 "        GRADE MANAGER\n" +
                 "==============================\n" +
-                "1. Add grade\n"+
+                "1. Add grade - (Can undo)\n"+
                 "2. Show all grades\n"+
-                "3. Update grade\n"+
-                "4. Remove grade\n"+
+                "3. Update grade - (Can undo)\n"+
+                "4. Remove grade - (Can undo)\n"+
                 "5. Search grade\n" +
                 "6. Sort grades ascending\n" +
                 "7. Sort grades descending\n" +
                 "8. Show statistics\n" +
-                "9. Clear all grades\n" +
+                "9. Clear all grades - (Can undo)\n" +
                 "10. SaveGrades data\n" +
                 "11. LoadGrades data\n" +
                 "12. AUTOSaveGrades data " + autosave+
                 "\n13. AUTOLoadGrades data " + infoload+
                 "\n14. Random arrays\n" +
+                "\n15. Undo parameters\n" +
 
                 "\n"+
                 "0. Exit\n"+
@@ -379,6 +495,9 @@ public class Main implements Serializable {
                     break;
                 case 14:
                     randomArrays();
+                    break;
+                case 15:
+                    Undo();
                     break;
                 case 0:
                     exit = true;
